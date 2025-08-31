@@ -1,5 +1,18 @@
-# Use Node 18 LTS slim image (includes Yarn)
+# Use Node 20 LTS slim image
 FROM node:20-bullseye-slim
+
+# Install build essentials for native modules
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
+    python3-pip \
+    g++ \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Update libstdc++ for GLIBCXX_3.4.29
+RUN apt-get update && apt-get install -y libstdc++6
 
 # Set working directory inside container
 WORKDIR /usr/src/app
@@ -13,16 +26,15 @@ RUN yarn install --frozen-lockfile
 # Copy the rest of the application code
 COPY . .
 
-# Bootstrap project (run Gauzy/Aruvili bootstrap script)
+# Bootstrap project
 RUN yarn bootstrap
 
 # Expose ports for UI and API
 EXPOSE 3000 4200
 
-# Optional: set environment variables (replace with your .env variables or use a separate .env file)
+# Environment variables (replace as needed)
 ENV NODE_ENV=development
 ENV APP_NAME="Aruvili"
-# Add more ENV variables if needed
 
 # Start API and UI together
 CMD ["yarn", "start"]
