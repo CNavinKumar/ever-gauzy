@@ -1,32 +1,28 @@
-# Use official Node.js LTS image
-FROM node:18.19.1
+# Use Node 18 LTS slim image (includes Yarn)
+FROM node:18-bullseye-slim
 
-# Set working directory
-WORKDIR /app
+# Set working directory inside container
+WORKDIR /usr/src/app
 
-# Copy package files
+# Copy package files first (for caching dependencies)
 COPY package.json yarn.lock ./
-
-# Install Yarn globally (optional if Node image doesn't have it)
-RUN npm install -g yarn
 
 # Install dependencies
 RUN yarn install --frozen-lockfile
 
-# Bootstrap Gauzy (install internal packages & build dependencies)
-RUN yarn bootstrap
-
 # Copy the rest of the application code
 COPY . .
 
-# Optional: prepare husky hooks for development
-# RUN yarn prepare:husky
+# Bootstrap project (run Gauzy/Aruvili bootstrap script)
+RUN yarn bootstrap
 
 # Expose ports for UI and API
-EXPOSE 4200 3000
+EXPOSE 3000 4200
 
-# Use environment variables from .env file if exists
+# Optional: set environment variables (replace with your .env variables or use a separate .env file)
 ENV NODE_ENV=development
+ENV APP_NAME="Aruvili"
+# Add more ENV variables if needed
 
-# Default command: run both API and UI
+# Start API and UI together
 CMD ["yarn", "start"]
